@@ -14,7 +14,14 @@ const currencyAPI = createApi({
     }),
     endpoints: (build) => ({
         getCurrencyConversion: build.query<ConversionResponse, { from: string, to: string, amount: number }>({
-            query: ({ from, to, amount }) => `convert?from=${from}&to=${to}&amount=${amount}`
+            query: ({ from, to, amount, history }) => `convert?from=${from}&to=${to}&amount=${amount}`,
+            transformResponse: (response: ConversionResponse, meta, arg) => {
+                
+                return {
+                    ...response.response,
+                    history: [response.response, ...(arg.history || [])].slice(0, 5)
+                }
+            }
         }),
         getCurrencies: build.query<CurrencyType[], void>({
             query: () => 'currencies',

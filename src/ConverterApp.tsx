@@ -12,9 +12,15 @@ const ConverterApp = () => {
 	const [fromCurrency, setFromCurrency] = useState('GBP');
 	const [toCurrency, setToCurrency] = useState('JPY');
 
+	// history state
+	const [showHistory, setShowHistory] = useState(false);
+	const [history, setHistory] = useState([]);
+
 	// fetch any currency data that we need
 	const { data: currencies, isLoading } = useGetCurrenciesQuery();
-	const [convertTrigger, { data: conversion, isFetching: conversionIsFetching}] = useLazyGetCurrencyConversionQuery()
+	const [convertTrigger, { data: conversion, isFetching: conversionIsFetching}] = useLazyGetCurrencyConversionQuery();
+
+	console.log(conversion);
 
 	// if we don't have a suitable API key, let's call that out
 	if (!import.meta.env.VITE_API_KEY) return (
@@ -43,40 +49,60 @@ const ConverterApp = () => {
 	if (isSameCurrency) buttonFeedback = 'Currencies are the same...'
 
 	return (
-		<form className={styles.App}>
-			<h1>ConverterApp</h1>
+		<>
+			<form className={styles.App}>
+				<h1>ConverterApp</h1>
 
-			<AmountInput
-				name='amount'
-				label='Amount to convert...'
-				value={amount}
-				onChange={setAmount}
-			/>
+				<AmountInput
+					name='amount'
+					label='Amount to convert...'
+					value={amount}
+					onChange={setAmount}
+				/>
 
-			<CurrencySelect
-				name='from-currency'
-				label='Convert from...'
-				currencies={currencies}
-				value={fromCurrency}
-				onChange={setFromCurrency}
-			/>
+				<CurrencySelect
+					name='from-currency'
+					label='Convert from...'
+					currencies={currencies}
+					value={fromCurrency}
+					onChange={setFromCurrency}
+				/>
 
-			<CurrencySelect
-				name='to-currency'
-				label='Convert to...'
-				currencies={currencies}
-				value={toCurrency}
-				onChange={setToCurrency}
-			/>
+				<CurrencySelect
+					name='to-currency'
+					label='Convert to...'
+					currencies={currencies}
+					value={toCurrency}
+					onChange={setToCurrency}
+				/>
 
-			<Conversion conversion={conversion} isFetching={conversionIsFetching} />
+				<Conversion conversion={conversion} isFetching={conversionIsFetching} />
 
-			<button
-				className={styles.Button}
-				onClick={() => convertTrigger({ from: fromCurrency, to: toCurrency, amount: numericalAmount })}
-				disabled={disallowConversion}
-			>{ buttonFeedback }</button>
-		</form>
+				<button
+					className={styles.Button}
+					onClick={() => convertTrigger({ 
+						from: fromCurrency,
+						to: toCurrency,
+						amount: numericalAmount,
+						history: conversion?.history || []
+					})}
+					disabled={disallowConversion}
+				>{ buttonFeedback }</button>
+
+				<a onClick={() => setShowHistory(true)}>Conversion history</a>
+			</form>
+			{ showHistory && 
+				<div className={styles.Modal}>
+					<h2>History <a onClick={() => setShowHistory(false)}>x</a></h2>
+					{ conversion?.history 
+						? (conversion.history.map(({ amount, value, from, to }) => (
+							<li>{`${amount}${from}-->${value}${to}`}</li>
+						)))
+						: <p>No history yet, convert something!</p>							
+					}
+				</div>
+			}
+		</>
 	)
 }
 

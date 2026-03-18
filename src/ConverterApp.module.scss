@@ -42,3 +42,12 @@
         width: auto;
     }
 }
+
+.Modal {
+    position: fixed;
+    background: black;
+    color: white;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    z-index: 999;
+}
